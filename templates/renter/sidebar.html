@@ -1,0 +1,36 @@
+<div class="col-md-3 col-lg-2">
+    <div class="sidebar bg-light rounded p-3">
+        <h5 class="sidebar-title mb-3">Renter Dashboard</h5>
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint == 'renter.dashboard' }}"
+                   href="{{ url_for('renter.dashboard') }}">
+                    <i class="fas fa-tachometer-alt me-2"></i>Overview
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint == 'renter.my_bookings' }}"
+                   href="{{ url_for('renter.my_bookings') }}">
+                    <i class="fas fa-calendar-check me-2"></i>My Bookings
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint == 'renter.favorites' }}"
+                   href="{{ url_for('renter.favorites') }}">
+                    <i class="fas fa-heart me-2"></i>Favorites
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.endpoint == 'renter.profile' }}"
+                   href="{{ url_for('renter.profile') }}">
+                    <i class="fas fa-user me-2"></i>Profile
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-danger" href="{{ url_for('auth.logout') }}">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Welcome to Rent Hub</h1>
+                <p class="lead mb-4">Your trusted platform for renting items safely and conveniently. Connect with owners and renters in your community.</p>
+                <div class="d-flex gap-3 flex-wrap">
+                    {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-plus"></i> Get Started
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="fas fa-home display-1 text-warning"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row text-center mb-5">
+        <div class="col-12">
+            <h2 class="display-5 mb-3">Why Choose Rent Hub?</h2>
+            <p class="lead">Safe, reliable, and convenient rental platform</p>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt text-primary"></i>
+                    </div>
+                    <h4 class="card-title">Verified Items</h4>
+                    <p class="card-text">All items are verified by our admin team to ensure quality and authenticity.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-hand-holding-usd text-success"></i>
+                    </div>
+                    <h4 class="card-title">Easy Rentals</h4>
+                    <p class="card-text">Simple and straightforward rental process with secure transactions.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-users text-info"></i>
+                    </div>
+                    <h4 class="card-title">Trusted Community</h4>
+                    <p class="card-text">Join a community of trusted owners and renters with verified profiles.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h3>Ready to get started?</h3>
+                <p class="lead">Join thousands of users who trust Rent Hub for their rental needs.</p>
+                {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+                    Create Your Account
+                </a>
+                {% endif %}
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="fas fa-rocket display-1 text-muted"></i>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,447 @@
+<!-- templates/renter/favorites.html -->
+{% extends "base.html" %}
+
+{% block title %}My Favorites - Rent Hub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% include 'renter/sidebar.html' %}
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <div class="dashboard-content">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h3 mb-1">My Favorites</h1>
+                        <p class="text-muted mb-0">Your saved properties for future reference</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-sort me-2"></i>Sort By
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="?sort=date_added">Date Added</a></li>
+                                <li><a class="dropdown-item" href="?sort=price_low">Price: Low to High</a></li>
+                                <li><a class="dropdown-item" href="?sort=price_high">Price: High to Low</a></li>
+                                <li><a class="dropdown-item" href="?sort=rating">Highest Rated</a></li>
+                            </ul>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-filter me-2"></i>Filter
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="?filter=all">All Properties</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="?filter=available">Available Now</a></li>
+                                <li><a class="dropdown-item" href="?filter=discount">With Discount</a></li>
+                                <li><a class="dropdown-item" href="?filter=superhost">Superhost</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Favorites Stats -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-danger bg-opacity-10">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0 text-danger">{{ favorites|length }}</h4>
+                                        <small class="text-muted">Total Favorites</small>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-heart fa-lg text-danger"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-success bg-opacity-10">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0 text-success">{{ available_count }}</h4>
+                                        <small class="text-muted">Available Now</small>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-calendar-check fa-lg text-success"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-warning bg-opacity-10">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0 text-warning">{{ discount_count }}</h4>
+                                        <small class="text-muted">With Discount</small>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-tag fa-lg text-warning"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-info bg-opacity-10">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0 text-info">{{ superhost_count }}</h4>
+                                        <small class="text-muted">Superhost</small>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-star fa-lg text-info"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View Toggle -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="view-options">
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="view-option" id="grid-view" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="grid-view">
+                                <i class="fas fa-th-large"></i>
+                            </label>
+
+                            <input type="radio" class="btn-check" name="view-option" id="list-view" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="list-view">
+                                <i class="fas fa-list"></i>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="text-muted">
+                        Showing <strong>{{ favorites|length }}</strong> favorite properties
+                    </div>
+                </div>
+
+                <!-- Favorites Grid -->
+                {% if favorites %}
+                <div class="row" id="favorites-grid">
+                    {% for favorite in favorites %}
+                    <div class="col-xl-4 col-lg-6 col-md-6 mb-4">
+                        <div class="card property-card h-100">
+                            <div class="position-relative">
+                                <img src="{{ favorite.property.image_url or '/static/images/default-property.jpg' }}"
+                                     class="card-img-top"
+                                     alt="{{ favorite.property.title }}"
+                                     style="height: 200px; object-fit: cover;">
+
+                                <!-- Favorite Button -->
+                                <button class="btn btn-danger btn-sm position-absolute top-0 end-0 m-3 favorite-btn"
+                                        data-property-id="{{ favorite.property.id }}"
+                                        title="Remove from favorites">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+
+                                <!-- Discount Badge -->
+                                {% if favorite.property.discount %}
+                                <span class="position-absolute top-0 start-0 m-3 badge bg-warning">
+                                    <i class="fas fa-tag me-1"></i>{{ favorite.property.discount }}% OFF
+                                </span>
+                                {% endif %}
+
+                                <!-- Superhost Badge -->
+                                {% if favorite.property.superhost %}
+                                <span class="position-absolute bottom-0 start-0 m-3 badge bg-info">
+                                    <i class="fas fa-star me-1"></i>Superhost
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0">{{ favorite.property.title }}</h5>
+                                    <div class="property-rating">
+                                        <i class="fas fa-star text-warning"></i>
+                                        <span class="text-muted">{{ "%.1f"|format(favorite.property.rating) }}</span>
+                                    </div>
+                                </div>
+
+                                <p class="card-text text-muted small mb-2">
+                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                    {{ favorite.property.location }}
+                                </p>
+
+                                <div class="property-features mb-3">
+                                    <div class="d-flex gap-3 text-muted small">
+                                        <span>
+                                            <i class="fas fa-users me-1"></i>
+                                            {{ favorite.property.guests }} guests
+                                        </span>
+                                        <span>
+                                            <i class="fas fa-bed me-1"></i>
+                                            {{ favorite.property.bedrooms }} beds
+                                        </span>
+                                        <span>
+                                            <i class="fas fa-bath me-1"></i>
+                                            {{ favorite.property.bathrooms }} baths
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="property-price d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="h5 text-primary">${{ favorite.property.price_per_night }}</span>
+                                        <span class="text-muted">/night</span>
+                                        {% if favorite.property.original_price %}
+                                        <div>
+                                            <small class="text-muted text-decoration-line-through">
+                                                ${{ favorite.property.original_price }}
+                                            </small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="availability-badge">
+                                        {% if favorite.property.available %}
+                                        <span class="badge bg-success">Available</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Booked</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-footer bg-transparent">
+                                <div class="d-grid gap-2">
+                                    <a href="{{ url_for('main.property_detail', property_id=favorite.property.id) }}"
+                                       class="btn btn-primary">
+                                        <i class="fas fa-eye me-2"></i>View Details
+                                    </a>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('renter_routes.book_property', property_id=favorite.property.id) }}"
+                                           class="btn btn-outline-success {{ 'disabled' if not favorite.property.available }}">
+                                            <i class="fas fa-calendar-plus me-2"></i>Book Now
+                                        </a>
+                                        <button class="btn btn-outline-danger remove-favorite-btn"
+                                                data-property-id="{{ favorite.property.id }}"
+                                                title="Remove from favorites">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- List View (Hidden by default) -->
+                <div class="d-none" id="favorites-list">
+                    {% for favorite in favorites %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <img src="{{ favorite.property.image_url or '/static/images/default-property.jpg' }}"
+                                         class="img-fluid rounded"
+                                         alt="{{ favorite.property.title }}"
+                                         style="height: 150px; width: 100%; object-fit: cover;">
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title mb-0">{{ favorite.property.title }}</h5>
+                                        <div class="property-rating">
+                                            <i class="fas fa-star text-warning"></i>
+                                            <span class="text-muted">{{ "%.1f"|format(favorite.property.rating) }}</span>
+                                        </div>
+                                    </div>
+
+                                    <p class="card-text text-muted mb-2">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        {{ favorite.property.location }}
+                                    </p>
+
+                                    <div class="property-features mb-2">
+                                        <div class="d-flex gap-3 text-muted small">
+                                            <span>
+                                                <i class="fas fa-users me-1"></i>
+                                                {{ favorite.property.guests }} guests
+                                            </span>
+                                            <span>
+                                                <i class="fas fa-bed me-1"></i>
+                                                {{ favorite.property.bedrooms }} beds
+                                            </span>
+                                            <span>
+                                                <i class="fas fa-bath me-1"></i>
+                                                {{ favorite.property.bathrooms }} baths
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="property-tags">
+                                        {% if favorite.property.superhost %}
+                                        <span class="badge bg-info me-1">Superhost</span>
+                                        {% endif %}
+                                        {% if favorite.property.discount %}
+                                        <span class="badge bg-warning me-1">{{ favorite.property.discount }}% OFF</span>
+                                        {% endif %}
+                                        {% if favorite.property.available %}
+                                        <span class="badge bg-success">Available</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Booked</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-3 text-end">
+                                    <div class="property-price mb-3">
+                                        <span class="h4 text-primary">${{ favorite.property.price_per_night }}</span>
+                                        <span class="text-muted">/night</span>
+                                        {% if favorite.property.original_price %}
+                                        <div>
+                                            <small class="text-muted text-decoration-line-through">
+                                                ${{ favorite.property.original_price }}
+                                            </small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('main.property_detail', property_id=favorite.property.id) }}"
+                                           class="btn btn-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i>View
+                                        </a>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('renter_routes.book_property', property_id=favorite.property.id) }}"
+                                               class="btn btn-outline-success {{ 'disabled' if not favorite.property.available }}">
+                                                Book Now
+                                            </a>
+                                            <button class="btn btn-outline-danger remove-favorite-btn"
+                                                    data-property-id="{{ favorite.property.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if favorites|length > 6 %}
+                <nav aria-label="Favorites pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1">Previous</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+
+                {% else %}
+                <!-- Empty State -->
+                <div class="text-center py-5">
+                    <div class="empty-state-icon mb-4">
+                        <i class="fas fa-heart-broken fa-4x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">No Favorites Yet</h4>
+                    <p class="text-muted mb-4">Start exploring properties and add them to your favorites for easy access later!</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{{ url_for('main.properties') }}" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Explore Properties
+                        </a>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-home me-2"></i>Back to Home
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Remove Favorite Confirmation Modal -->
+<div class="modal fade" id="removeFavoriteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove from Favorites</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to remove this property from your favorites?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="removeFavoriteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Remove</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // View toggle functionality
+    const gridViewRadio = document.getElementById('grid-view');
+    const listViewRadio = document.getElementById('list-view');
+    const favoritesGrid = document.getElementById('favorites-grid');
+    const favoritesList = document.getElementById('favorites-list');
+
+    gridViewRadio.addEventListener('change', function() {
+        if (this.checked) {
+            favoritesGrid.classList.remove('d-none');
+            favoritesList.classList.add('d-none');
+        }
+    });
+
+    listViewRadio.addEventListener('change', function() {
+        if (this.checked) {
+            favoritesGrid.classList.add('d-none');
+            favoritesList.classList.remove('d-none');
+        }
+    });
+
+    // Remove favorite functionality
+    const removeFavoriteBtns = document.querySelectorAll('.remove-favorite-btn, .favorite-btn');
+    const removeFavoriteModal = new bootstrap.Modal(document.getElementById('removeFavoriteModal'));
+    const removeFavoriteForm = document.getElementById('removeFavoriteForm');
+
+    removeFavoriteBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const propertyId = this.getAttribute('data-property-id');
+            removeFavoriteForm.action = `/favorites/remove/${propertyId}`;
+            removeFavoriteModal.show();
+        });
+    });
+
+    // Add smooth animations
+    const propertyCards = document.querySelectorAll('.property-card');
+    propertyCards.forEach(card => {
+        card.style.transition = 'transform 0.2s ease-in-out';
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %}

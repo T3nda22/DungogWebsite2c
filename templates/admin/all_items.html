@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}All Items{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/sidebar.html' %}
+        
+        <div class="col-md-9 col-lg-10 ms-sm-auto px-4 py-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">All Items</h1>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    {% if items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Owner</th>
+                                    <th>Category</th>
+                                    <th>Price/Day</th>
+                                    <th>Status</th>
+                                    <th>Available</th>
+                                    <th>Date Added</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td>{{ item.id }}</td>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.owner.username }}</td>
+                                    <td>{{ item.category }}</td>
+                                    <td>${{ "%.2f"|format(item.price_per_day) }}</td>
+                                    <td>
+                                        <span class="status-badge status-{{ item.status }}">
+                                            {{ item.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if item.is_available %}
+                                        <span class="badge bg-success">Yes</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if item.status == 'pending' %}
+                                            <form method="POST" action="{{ url_for('admin.approve_item', item_id=item.id) }}" class="d-inline">
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ url_for('admin.reject_item', item_id=item.id) }}" class="d-inline">
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                s    {% else %}
+                    <p class="text-muted">No items found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

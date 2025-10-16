@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Pending Items{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'admin/sidebar.html' %}
+        
+        <div class="col-md-9 col-lg-10 ms-sm-auto px-4 py-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Pending Items for Approval</h1>
+            </div>
+
+            {% if items %}
+            <div class="row g-4">
+                {% for item in items %}
+                <div class="col-lg-6">
+                    <div class="card item-card">
+                        {% if item.image_path %}
+                        <img src="{{ url_for('static', filename=item.image_path.replace('static/', '')) }}" 
+                             class="card-img-top item-image" alt="{{ item.name }}">
+                        {% else %}
+                        <div class="card-img-top item-image bg-light d-flex align-items-center justify-content-center">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-body">
+                            <h5 class="card-title">{{ item.name }}</h5>
+                            <p class="card-text text-muted">{{ item.description[:100] }}{% if item.description|length > 100 %}...{% endif %}</p>
+                            
+                            <div class="mb-2">
+                                <strong>Category:</strong> {{ item.category }}<br>
+                                <strong>Price:</strong> ${{ "%.2f"|format(item.price_per_day) }}/day<br>
+                                <strong>Location:</strong> {{ item.location }}<br>
+                                <strong>Owner:</strong> {{ item.owner.username }}
+                            </div>
+                            
+                            {% if item.proof_path %}
+                            <div class="mb-3">
+                                <strong>Ownership Proof:</strong>
+                                <a href="{{ url_for('static', filename=item.proof_path.replace('static/', '')) }}" 
+                                   target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View Proof
+                                </a>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="d-flex gap-2">
+                                <form method="POST" action="{{ url_for('admin.approve_item', item_id=item.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin.reject_item', item_id=item.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <h3>No Pending Items</h3>
+                <p class="text-muted">All items have been reviewed and processed.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

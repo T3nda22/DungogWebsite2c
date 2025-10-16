@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Add Item{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        {% include 'owner/sidebar.html' %}
+        
+        <div class="col-md-9 col-lg-10 ms-sm-auto px-4 py-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Add New Item</h1>
+                <a href="{{ url_for('owner.manage_items') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Items
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Item Name *</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="category" class="form-label">Category *</label>
+                                    <select class="form-select" id="category" name="category" required>
+                                        <option value="">Select Category</option>
+                                        <option value="Electronics">Electronics</option>
+                                        <option value="Tools">Tools</option>
+                                        <option value="Furniture">Furniture</option>
+                                        <option value="Vehicles">Vehicles</option>
+                                        <option value="Sports">Sports Equipment</option>
+                                        <option value="Clothing">Clothing</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="price_per_day" class="form-label">Price per Day ($) *</label>
+                                    <input type="number" class="form-control" id="price_per_day" name="price_per_day" 
+                                           step="0.01" min="0" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="location" class="form-label">Location *</label>
+                                    <input type="text" class="form-control" id="location" name="location" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description *</label>
+                                    <textarea class="form-control" id="description" name="description" 
+                                              rows="4" required></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="image" class="form-label">Item Image</label>
+                                    <input type="file" class="form-control" id="image" name="image" 
+                                           accept="image/*">
+                                    <div class="form-text">Upload a clear photo of your item (PNG, JPG, JPEG, GIF)</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="proof" class="form-label">Ownership Proof *</label>
+                                    <input type="file" class="form-control" id="proof" name="proof" 
+                                           accept="image/*" required>
+                                    <div class="form-text">Upload proof of ownership (receipt, bill, etc.)</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="reset" class="btn btn-outline-secondary me-md-2">Reset</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Add Item
+                  s          </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

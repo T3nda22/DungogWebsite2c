@@ -1,0 +1,350 @@
+<!-- templates/renter/my_bookings.html -->
+{% extends "base.html" %}
+
+{% block title %}My Bookings - Rent Hub{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% include 'renter/sidebar.html' %}
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <div class="dashboard-content">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h3 mb-1">My Bookings</h1>
+                        <p class="text-muted mb-0">Manage your property bookings and reservations</p>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-filter me-2"></i>Filter
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="?status=all">All Bookings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="?status=upcoming">Upcoming</a></li>
+                            <li><a class="dropdown-item" href="?status=active">Active</a></li>
+                            <li><a class="dropdown-item" href="?status=completed">Completed</a></li>
+                            <li><a class="dropdown-item" href="?status=cancelled">Cancelled</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Booking Stats -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-primary bg-opacity-10">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0 text-primary">{{ bookings|length }}</h4>
+                                        <small class="text-muted">Total Bookings</small>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-calendar-alt fa-lg text-primary"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-success bg-opacity-10">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0 text-success">{{ upcoming_count }}</h4>
+                                        <small class="text-muted">Upcoming</small>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-clock fa-lg text-success"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-info bg-opacity-10">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0 text-info">{{ active_count }}</h4>
+                                        <small class="text-muted">Active</small>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-play-circle fa-lg text-info"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-0 bg-warning bg-opacity-10">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h4 class="mb-0 text-warning">{{ completed_count }}</h4>
+                                        <small class="text-muted">Completed</small>
+                                    </div>
+                                    <div class="align-self-center">
+                                        <i class="fas fa-check-circle fa-lg text-warning"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bookings List -->
+                <div class="card">
+                    <div class="card-body">
+                        {% if bookings %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Property</th>
+                                            <th>Dates</th>
+                                            <th>Total Price</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for booking in bookings %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="{{ booking.property.image_url or '/static/images/default-property.jpg' }}"
+                                                         alt="{{ booking.property.title }}"
+                                                         class="rounded me-3"
+                                                         style="width: 60px; height: 60px; object-fit: cover;">
+                                                    <div>
+                                                        <h6 class="mb-1">{{ booking.property.title }}</h6>
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                                            {{ booking.property.location }}
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>{{ booking.check_in_date.strftime('%b %d, %Y') }}</strong>
+                                                    <div class="text-muted small">
+                                                        <i class="fas fa-arrow-right fa-xs me-1"></i>
+                                                        {{ booking.check_out_date.strftime('%b %d, %Y') }}
+                                                    </div>
+                                                    <small class="text-info">
+                                                        {{ (booking.check_out_date - booking.check_in_date).days }} nights
+                                                    </small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <strong class="text-success">${{ "%.2f"|format(booking.total_price) }}</strong>
+                                            </td>
+                                            <td>
+                                                {% if booking.status == 'confirmed' %}
+                                                    <span class="badge bg-success">Confirmed</span>
+                                                {% elif booking.status == 'pending' %}
+                                                    <span class="badge bg-warning">Pending</span>
+                                                {% elif booking.status == 'active' %}
+                                                    <span class="badge bg-info">Active</span>
+                                                {% elif booking.status == 'completed' %}
+                                                    <span class="badge bg-secondary">Completed</span>
+                                                {% elif booking.status == 'cancelled' %}
+                                                    <span class="badge bg-danger">Cancelled</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <button class="btn btn-sm btn-outline-primary"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#bookingModal{{ booking.id }}">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    {% if booking.status in ['pending', 'confirmed'] %}
+                                                    <button class="btn btn-sm btn-outline-danger"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#cancelModal{{ booking.id }}">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Booking Details Modal -->
+                                        <div class="modal fade" id="bookingModal{{ booking.id }}" tabindex="-1">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Booking Details</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <h6>Property Information</h6>
+                                                                <img src="{{ booking.property.image_url or '/static/images/default-property.jpg' }}"
+                                                                     alt="{{ booking.property.title }}"
+                                                                     class="img-fluid rounded mb-3">
+                                                                <h5>{{ booking.property.title }}</h5>
+                                                                <p class="text-muted">
+                                                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                                                    {{ booking.property.location }}
+                                                                </p>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <h6>Booking Details</h6>
+                                                                <table class="table table-sm">
+                                                                    <tr>
+                                                                        <td><strong>Booking ID:</strong></td>
+                                                                        <td>#{{ booking.id }}</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td><strong>Check-in:</strong></td>
+                                                                        <td>{{ booking.check_in_date.strftime('%b %d, %Y') }}</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td><strong>Check-out:</strong></td>
+                                                                        <td>{{ booking.check_out_date.strftime('%b %d, %Y') }}</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td><strong>Duration:</strong></td>
+                                                                        <td>{{ (booking.check_out_date - booking.check_in_date).days }} nights</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td><strong>Guests:</strong></td>
+                                                                        <td>{{ booking.guests_count }} guests</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td><strong>Total Price:</strong></td>
+                                                                        <td class="text-success">${{ "%.2f"|format(booking.total_price) }}</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td><strong>Status:</strong></td>
+                                                                        <td>
+                                                                            {% if booking.status == 'confirmed' %}
+                                                                                <span class="badge bg-success">Confirmed</span>
+                                                                            {% elif booking.status == 'pending' %}
+                                                                                <span class="badge bg-warning">Pending</span>
+                                                                            {% elif booking.status == 'active' %}
+                                                                                <span class="badge bg-info">Active</span>
+                                                                            {% elif booking.status == 'completed' %}
+                                                                                <span class="badge bg-secondary">Completed</span>
+                                                                            {% elif booking.status == 'cancelled' %}
+                                                                                <span class="badge bg-danger">Cancelled</span>
+                                                                            {% endif %}
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        {% if booking.status in ['pending', 'confirmed'] %}
+                                                        <button type="button" class="btn btn-danger"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#cancelModal{{ booking.id }}"
+                                                                data-bs-dismiss="modal">
+                                                            Cancel Booking
+                                                        </button>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Cancel Booking Modal -->
+                                        <div class="modal fade" id="cancelModal{{ booking.id }}" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Cancel Booking</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Are you sure you want to cancel your booking for <strong>{{ booking.property.title }}</strong>?</p>
+                                                        <p class="text-danger">
+                                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                                            Cancellation fees may apply based on the property's cancellation policy.
+                                                        </p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Booking</button>
+                                                        <form action="{{ url_for('renter_routes.cancel_booking', booking_id=booking.id) }}" method="POST" style="display: inline;">
+                                                            <button type="submit" class="btn btn-danger">Cancel Booking</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <!-- Empty State -->
+                            <div class="text-center py-5">
+                                <div class="empty-state-icon mb-4">
+                                    <i class="fas fa-calendar-times fa-4x text-muted"></i>
+                                </div>
+                                <h4 class="text-muted mb-3">No Bookings Yet</h4>
+                                <p class="text-muted mb-4">You haven't made any bookings yet. Start exploring properties to book your perfect stay!</p>
+                                <a href="{{ url_for('main.properties') }}" class="btn btn-primary">
+                                    <i class="fas fa-search me-2"></i>Explore Properties
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                {% if bookings and bookings|length > 10 %}
+                <nav aria-label="Bookings pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1">Previous</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add some interactive functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Filter functionality
+    const filterButtons = document.querySelectorAll('.dropdown-item');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            const status = this.getAttribute('href').split('=')[1];
+            // You can add AJAX filtering here or let the link navigate naturally
+        });
+    });
+
+    // Status badge styling
+    const statusBadges = document.querySelectorAll('.badge');
+    statusBadges.forEach(badge => {
+        if (badge.textContent.trim() === 'Pending') {
+            badge.classList.add('bg-warning', 'text-dark');
+        }
+    });
+});
+</script>
+{% endblock %}
