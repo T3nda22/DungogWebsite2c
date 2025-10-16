@@ -73,7 +73,6 @@ def rent_item(item_id):
 @renter_bp.route('/my-bookings')
 @login_required
 def my_bookings():
-    # Sample data - replace with your actual database queries
     bookings = [
         {
             'id': 1,
@@ -118,7 +117,6 @@ def my_bookings():
 @renter_bp.route('/cancel-booking/<int:booking_id>', methods=['POST'])
 @login_required
 def cancel_booking(booking_id):
-    # Add your cancellation logic here
     flash('Booking cancelled successfully', 'success')
     return redirect(url_for('renter.my_bookings'))
 
@@ -126,7 +124,6 @@ def cancel_booking(booking_id):
 @renter_bp.route('/favorites')
 @login_required
 def favorites():
-    # Sample data - replace with your actual database queries
     favorites = [
         {
             'id': 1,
@@ -187,7 +184,6 @@ def favorites():
         }
     ]
 
-    # Calculate counts for stats
     available_count = len([f for f in favorites if f['property']['available']])
     discount_count = len([f for f in favorites if f['property']['discount']])
     superhost_count = len([f for f in favorites if f['property']['superhost']])

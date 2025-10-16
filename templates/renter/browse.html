@@ -11,8 +11,6 @@
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Browse Items</h1>
             </div>
-
-            <!-- Search and Filter -->
             <div class="card mb-4">
                 <div class="card-body">
                     <form method="GET" class="row g-3">
@@ -39,8 +37,6 @@
                     </form>
                 </div>
             </div>
-
-            <!-- Items Grid -->
             {% if items %}
             <div class="row g-4">
                 {% for item in items %}
@@ -79,8 +75,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Rent Modal -->
                 <div class="modal fade" id="rentModal{{ item.id }}" tabindex="-1">
                     <div class="modal-dialog">
                         <div class="modal-content">

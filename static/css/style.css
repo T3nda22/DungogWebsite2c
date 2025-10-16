@@ -157,7 +157,6 @@ body {
     height: 1rem;
 }
 
-/* Custom scrollbar for sidebar */
 .sidebar::-webkit-scrollbar {
     width: 6px;
 }
@@ -175,7 +174,6 @@ body {
     background: #3498db;
 }
 
-/* Loading animations */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -185,7 +183,6 @@ body {
     animation: fadeIn 0.5s ease-out;
 }
 
-/* Print styles */
 @media print {
     .navbar, .sidebar, .btn, .alert {
         display: none !important;
@@ -197,7 +194,6 @@ body {
     }
 }
 
-/* Dark mode support */
 @media (prefers-color-scheme: dark) {
     .bg-light {
         background-color: #343a40 !important;

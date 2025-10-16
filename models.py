@@ -18,7 +18,6 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
 
-    # Relationships
     owned_items = db.relationship('Item', backref='owner', lazy=True, foreign_keys='Item.owner_id')
     rentals = db.relationship('Rental', backref='renter', lazy=True, foreign_keys='Rental.renter_id')
 
@@ -46,7 +45,6 @@ class Item(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationships
     rentals = db.relationship('Rental', backref='item', lazy=True)
 
 
