@@ -9,11 +9,9 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Ensure upload directories exist
     os.makedirs(os.path.join(app.static_folder, 'uploads', 'items'), exist_ok=True)
     os.makedirs(os.path.join(app.static_folder, 'uploads', 'proofs'), exist_ok=True)
 
-    # Initialize extensions
     db.init_app(app)
 
     login_manager = LoginManager()
@@ -25,7 +23,6 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # Import and register blueprints
     from routes.auth_routes import auth_bp
     from routes.admin_routes import admin_bp
     from routes.owner_routes import owner_bp
