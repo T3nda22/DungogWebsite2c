@@ -1,32 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rent Hub - {% block title %}Home{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Cebu Rental Hub{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    {% include 'shared/navbar.html' %}
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" class="logo" alt="Cebu Rental Hub">
+            </div>
+            <p>Your one-stop platform for rentals in Cebu City</p>
+        </div>
+    </header>
 
-    <div class="container-fluid">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="{{ url_for('items') }}" class="{% if request.endpoint == 'items' %}active{% endif %}"><i class="fas fa-list"></i> Rental Items</a></li>
+            {% if current_user.is_authenticated %}
+            <li><a href="{{ url_for('add_item') }}" class="{% if request.endpoint == 'add_item' %}active{% endif %}"><i class="fas fa-plus-circle"></i> Add Listing</a></li>
+            <li><a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
             {% endif %}
-        {% endwith %}
+            <li><a href="{{ url_for('about') }}" class="{% if request.endpoint == 'about' %}active{% endif %}"><i class="fas fa-info-circle"></i> About</a></li>
+            <li><a href="{{ url_for('contact') }}" class="{% if request.endpoint == 'contact' %}active{% endif %}"><i class="fas fa-envelope"></i> Contact</a></li>
 
+            <li class="user-actions">
+                {% if current_user.is_authenticated %}
+                <div class="user-profile">
+                    <div class="user-avatar">{{ current_user.username[0]|upper }}</div>
+                    <span>{{ current_user.username }}</span>
+                    <div class="user-dropdown">
+                        <a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                        <a href="{{ url_for('my_rentals') }}"><i class="fas fa-history"></i> My Rentals</a>
+                        <a href="{{ url_for('my_listings') }}"><i class="fas fa-box"></i> My Listings</a>
+                        <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+                {% else %}
+                <div id="userLoggedOut">
+                    <a href="{{ url_for('login') }}" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Login</a>
+                    <a href="{{ url_for('register') }}" id="registerBtn"><i class="fas fa-user-plus"></i> Register</a>
+                </div>
+                {% endif %}
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="toast toast-{{ category }} show">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <main>
         {% block content %}{% endblock %}
-    </div>
+    </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <footer>
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" class="logo" alt="Cebu Rental Hub">
+        </div>
+        <p>&copy; 2023 Cebu Rental Hub. All rights reserved.</p>
+        <p>Making rentals easy and accessible for everyone in Cebu</p>
+        <div class="social-links">
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-linkedin"></i></a>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

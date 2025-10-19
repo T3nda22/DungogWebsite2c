@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Add Listing - Cebu Rental Hub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <h2 class="section-title">List Your Item for Rent</h2>
+        
+        <form method="POST" class="item-form" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="title">Item Title *</label>
+                <input type="text" id="title" name="title" required placeholder="e.g., Power Drill, Party Tent, Camera">
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description *</label>
+                <textarea id="description" name="description" required placeholder="Describe your item, its condition, and any important details..." rows="5"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="price">Daily Price (₱) *</label>
+                    <input type="number" id="price" name="price" step="0.01" min="0" required placeholder="0.00">
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select Category</option>
+                        <option value="Tools & Equipment">Tools & Equipment</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Furniture">Furniture</option>
+                        <option value="Party Supplies">Party Supplies</option>
+                        <option value="Sports & Games">Sports & Games</option>
+                        <option value="Vehicles">Vehicles</option>
+                        <option value="Clothing">Clothing</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="location">Location *</label>
+                <input type="text" id="location" name="location" required placeholder="e.g., Cebu City, Mandaue, Lapu-Lapu">
+            </div>
+
+            <div class="form-group">
+                <label for="image">Item Image</label>
+                <div class="file-upload-container">
+                    <input type="file" id="image" name="image" accept="image/*" class="file-input">
+                    <label for="image" class="file-upload-label">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span>Choose an image...</span>
+                    </label>
+                    <div class="file-preview" id="filePreview"></div>
+                </div>
+                <small>Supported formats: JPG, PNG, GIF, WEBP. Max size: 16MB</small>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">List Item</button>
+                <a href="{{ url_for('items') }}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('image');
+    const filePreview = document.getElementById('filePreview');
+
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        filePreview.innerHTML = '';
+
+        if (file) {
+            if (file.size > 16 * 1024 * 1024) {
+                alert('File size must be less than 16MB');
+                fileInput.value = '';
+                return;
+            }
+
+            if (!file.type.match('image.*')) {
+                alert('Please select an image file');
+                fileInput.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.maxWidth = '200px';
+                img.style.maxHeight = '200px';
+                img.style.marginTop = '10px';
+                img.style.borderRadius = '4px';
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.textContent = 'Remove';
+                removeBtn.className = 'btn btn-outline btn-sm';
+                removeBtn.style.marginLeft = '10px';
+                removeBtn.onclick = function() {
+                    fileInput.value = '';
+                    filePreview.innerHTML = '';
+                };
+
+                filePreview.appendChild(img);
+                filePreview.appendChild(removeBtn);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+});
+</script>
+{% endblock %}

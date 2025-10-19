@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Rent {{ item.title }} - Cebu Rental Hub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="rent-item-container">
+        <div class="item-preview">
+            <img src="{{ item.image_url }}" alt="{{ item.title }}">
+            <h2>{{ item.title }}</h2>
+            <p class="item-price">₱{{ "%.2f"|format(item.price) }}/day</p>
+            <p class="item-location"><i class="fas fa-map-marker-alt"></i> {{ item.location }}</p>
+            <p class="item-description">{{ item.description }}</p>
+            <p class="item-owner">Listed by: {{ item.owner.username }}</p>
+        </div>
+        
+        <div class="rental-form-container">
+            <h3>Request Rental</h3>
+            <form method="POST" class="rental-form">
+                <div class="form-group">
+                    <label for="start_date">Start Date *</label>
+                    <input type="date" id="start_date" name="start_date" required min="{{ today }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="end_date">End Date *</label>
+                    <input type="date" id="end_date" name="end_date" required>
+                </div>
+                
+                <div class="price-summary">
+                    <div class="summary-line">
+                        <span>Daily Rate:</span>
+                        <span>₱{{ "%.2f"|format(item.price) }}</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>Rental Days:</span>
+                        <span id="days-count">0 days</span>
+                    </div>
+                    <div class="summary-line total">
+                        <span>Total Amount:</span>
+                        <span id="total-price">₱0.00</span>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Request Rental</button>
+                    <a href="{{ url_for('items') }}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startDate = document.getElementById('start_date');
+    const endDate = document.getElementById('end_date');
+    const daysCount = document.getElementById('days-count');
+    const totalPrice = document.getElementById('total-price');
+    const dailyRate = {{ item.price }};
+    
+    function calculatePrice() {
+        if (startDate.value && endDate.value) {
+            const start = new Date(startDate.value);
+            const end = new Date(endDate.value);
+            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+            
+            if (days > 0) {
+                daysCount.textContent = days + ' day' + (days !== 1 ? 's' : '');
+                totalPrice.textContent = '₱' + (days * dailyRate).toFixed(2);
+            } else {
+                daysCount.textContent = '0 days';
+                totalPrice.textContent = '₱0.00';
+            }
+        }
+    }
+    
+    startDate.addEventListener('change', function() {
+        endDate.min = this.value;
+        calculatePrice();
+    });
+    
+    endDate.addEventListener('change', calculatePrice);
+    
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    startDate.min = today;
+    endDate.min = today;
+});
+</script>
+{% endblock %}

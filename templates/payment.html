@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Payment - Cebu Rental Hub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="section-title">Complete Your Payment</h2>
+    
+    <div class="payment-container">
+        <div class="rental-summary">
+            <h3>Rental Summary</h3>
+            <div class="summary-item">
+                <strong>Item:</strong> {{ rental.item.title }}
+            </div>
+            <div class="summary-item">
+                <strong>Rental Period:</strong> {{ rental.start_date.strftime('%b %d, %Y') }} to {{ rental.end_date.strftime('%b %d, %Y') }}
+            </div>
+            <div class="summary-item">
+                <strong>Total Days:</strong> {{ ((rental.end_date - rental.start_date).days) }} days
+            </div>
+            <div class="summary-item">
+                <strong>Daily Rate:</strong> ₱{{ "%.2f"|format(rental.item.price) }}
+            </div>
+            <div class="summary-item total">
+                <strong>Total Amount:</strong> ₱{{ "%.2f"|format(rental.total_price) }}
+            </div>
+        </div>
+
+        <form method="POST" class="payment-form">
+            <h3>Select Payment Method</h3>
+
+            <div class="payment-methods">
+                <label class="payment-option">
+                    <input type="radio" name="payment_method" value="cash" required>
+                    <div class="payment-card">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>Cash on Pickup</span>
+                        <small>Pay when you pick up the item</small>
+                    </div>
+                </label>
+
+                <label class="payment-option">
+                    <input type="radio" name="payment_method" value="gcash" required>
+                    <div class="payment-card">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>GCash</span>
+                        <small>Instant digital payment</small>
+                    </div>
+                </label>
+            </div>
+
+            <div id="gcashInstructions" class="payment-instructions" style="display: none;">
+                <h4>GCash Payment Instructions</h4>
+                <div class="instructions">
+                    <p>1. Open your GCash app</p>
+                    <p>2. Go to "Send Money"</p>
+                    <p>3. Enter this number: <strong>0917-123-4567</strong></p>
+                    <p>4. Send the exact amount: <strong>₱{{ "%.2f"|format(rental.total_price) }}</strong></p>
+                    <p>5. Use this reference: <strong>RENTAL-{{ rental.id }}</strong></p>
+                    <p>6. Take a screenshot of the transaction</p>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Complete Payment</button>
+                <a href="{{ url_for('my_rentals') }}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+    const gcashInstructions = document.getElementById('gcashInstructions');
+
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', function() {
+            if (this.value === 'gcash') {
+                gcashInstructions.style.display = 'block';
+            } else {
+                gcashInstructions.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

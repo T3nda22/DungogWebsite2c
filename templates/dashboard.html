@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Cebu Rental Hub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="section-title">Dashboard</h2>
+    
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-history"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ total_rentals }}</h3>
+                <p>Total Rentals</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ active_bookings }}</h3>
+                <p>Active Bookings</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-credit-card"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ completed_payments }}</h3>
+                <p>Completed Payments</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-box"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ my_items }}</h3>
+                <p>My Listings</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="dashboard-sections">
+        <div class="dashboard-section">
+            <h3>Recent Rentals</h3>
+            {% if recent_rentals %}
+            <div class="rentals-list">
+                {% for rental in recent_rentals %}
+                <div class="rental-item-small">
+                    <div class="rental-info">
+                        <h4>{{ rental.item.title }}</h4>
+                        <p class="rental-dates">{{ rental.start_date.strftime('%b %d, %Y') }} - {{ rental.end_date.strftime('%b %d, %Y') }}</p>
+                        <span class="status-badge status-{{ rental.status }}">{{ rental.status|title }}</span>
+                    </div>
+                    <div class="rental-actions">
+                        <a href="{{ url_for('my_rentals') }}" class="btn btn-outline btn-sm">View Details</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-calendar-times"></i>
+                <p>No rentals yet</p>
+                <a href="{{ url_for('items') }}" class="btn btn-primary">Browse Items</a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="dashboard-section">
+            <h3>My Listings</h3>
+            {% if my_items > 0 %}
+            <div class="listings-preview">
+                {% for item in current_user.items[:3] %}
+                <div class="listing-item">
+                    <img src="{{ item.image_url }}" alt="{{ item.title }}">
+                    <div class="listing-info">
+                        <h4>{{ item.title }}</h4>
+                        <p>₱{{ "%.2f"|format(item.price) }}/day</p>
+                        <span class="availability {% if item.is_available %}available{% else %}unavailable{% endif %}">
+                            {{ 'Available' if item.is_available else 'Rented' }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <a href="{{ url_for('my_listings') }}" class="btn btn-outline">View All Listings</a>
+            {% else %}
+            <div class="no-data">
+                <i class="fas fa-box-open"></i>
+                <p>No listings yet</p>
+                <a href="{{ url_for('add_item') }}" class="btn btn-primary">Add Listing</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Rental Requests for Your Items -->
+    <div class="dashboard-section">
+        <h3>Rental Requests for Your Items</h3>
+        {% set has_requests = false %}
+        {% for item in current_user.items %}
+            {% for rental in item.rentals if rental.status == 'pending' %}
+                {% set has_requests = true %}
+            {% endfor %}
+        {% endfor %}
+        
+        {% if has_requests %}
+        <div class="rental-requests">
+            {% for item in current_user.items %}
+                {% for rental in item.rentals %}
+                    {% if rental.status == 'pending' %}
+                    <div class="rental-request">
+                        <div class="request-info">
+                            <h4>{{ item.title }}</h4>
+                            <p>Requested by: <strong>{{ rental.renter.username }}</strong></p>
+                            <p>Dates: {{ rental.start_date.strftime('%b %d, %Y') }} - {{ rental.end_date.strftime('%b %d, %Y') }}</p>
+                            <p>Total: ₱{{ "%.2f"|format(rental.total_price) }}</p>
+                        </div>
+                        <div class="request-actions">
+                            <a href="{{ url_for('update_rental_status', rental_id=rental.id, status='approved') }}" class="btn btn-primary btn-sm">Approve</a>
+                            <a href="{{ url_for('update_rental_status', rental_id=rental.id, status='cancelled') }}" class="btn btn-outline btn-sm">Decline</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-data">
+            <i class="fas fa-bell-slash"></i>
+            <p>No pending rental requests</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

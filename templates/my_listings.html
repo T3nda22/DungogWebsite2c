@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}My Listings - Cebu Rental Hub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="section-title">My Listings</h2>
+    
+    <div class="listings-header">
+        <a href="{{ url_for('add_item') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Listing</a>
+    </div>
+    
+    <div class="items-grid">
+        {% for item in items %}
+        <div class="rental-item">
+            <div class="item-image-container">
+                <img src="{{ item.image_url }}" alt="{{ item.title }}" class="item-image" onclick="openImageModal('{{ item.image_url }}')">
+                <div class="item-actions-overlay">
+                    <button class="btn btn-sm btn-outline" onclick="editItem({{ item.id }})">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-sm btn-outline" onclick="deleteItem({{ item.id }})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+            <div class="item-details">
+                <h3 class="item-title">{{ item.title }}</h3>
+                <p class="item-price">₱{{ "%.2f"|format(item.price) }}/day</p>
+                <div class="item-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>{{ item.location }}</span>
+                </div>
+                <p class="item-description">{{ item.description }}</p>
+                <div class="item-meta">
+                    <span class="item-category">{{ item.category }}</span>
+                    <span class="availability {% if item.is_available %}available{% else %}unavailable{% endif %}">
+                        {{ 'Available' if item.is_available else 'Rented' }}
+                    </span>
+                </div>
+                <div class="item-stats">
+                    <small>{{ item.rentals|length }} rental{{ 's' if item.rentals|length != 1 }}</small>
+                    <small>Listed {{ item.created_at.strftime('%b %d, %Y') }}</small>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="no-items">
+            <i class="fas fa-box-open"></i>
+            <h3>No listings yet</h3>
+            <p>Start earning by listing your items for rent!</p>
+            <a href="{{ url_for('add_item') }}" class="btn btn-primary">Add Your First Listing</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" class="image-modal">
+    <span class="close-modal">&times;</span>
+    <img class="modal-image" id="modalImage">
+</div>
+
+<script>
+function openImageModal(imageUrl) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    modal.style.display = 'flex';
+    modalImg.src = imageUrl;
+}
+
+function editItem(itemId) {
+    // Implement edit functionality
+    showToast('Edit feature coming soon!', 'warning');
+}
+
+function deleteItem(itemId) {
+    if (confirm('Are you sure you want to delete this listing?')) {
+        fetch(`/delete-item/${itemId}`, {
+            method: 'DELETE',
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Listing deleted successfully!', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showToast('Error deleting listing', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error deleting listing', 'error');
+        });
+    }
+}
+
+// Close modal when clicking X
+document.querySelector('.close-modal').addEventListener('click', function() {
+    document.getElementById('imageModal').style.display = 'none';
+});
+
+// Close modal when clicking outside image
+document.getElementById('imageModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

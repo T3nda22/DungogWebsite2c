@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}My Rentals - Cebu Rental Hub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="section-title">My Rentals</h2>
+    
+    {% for rental in rentals %}
+    <div class="rental-card">
+        <div class="rental-header">
+            <h3>{{ rental.item.title }}</h3>
+            <span class="status-badge status-{{ rental.status }}">{{ rental.status|title }}</span>
+        </div>
+        
+        <!-- Rental Tracker -->
+        <div class="rental-tracker">
+            <div class="tracker-step {% if rental.status in ['pending','approved','rented','returned'] %}completed{% endif %}">
+                <span class="step-number">1</span>
+                <span class="step-label">Pending</span>
+            </div>
+            <div class="tracker-step {% if rental.status in ['approved','rented','returned'] %}completed{% endif %} {% if rental.status == 'approved' %}active{% endif %}">
+                <span class="step-number">2</span>
+                <span class="step-label">Approved</span>
+            </div>
+            <div class="tracker-step {% if rental.status in ['rented','returned'] %}completed{% endif %} {% if rental.status == 'rented' %}active{% endif %}">
+                <span class="step-number">3</span>
+                <span class="step-label">Rented</span>
+            </div>
+            <div class="tracker-step {% if rental.status == 'returned' %}completed{% endif %} {% if rental.status == 'returned' %}active{% endif %}">
+                <span class="step-number">4</span>
+                <span class="step-label">Returned</span>
+            </div>
+        </div>
+        
+        <div class="rental-details">
+            <div class="detail-group">
+                <p><strong>Dates:</strong> {{ rental.start_date.strftime('%b %d, %Y') }} - {{ rental.end_date.strftime('%b %d, %Y') }}</p>
+                <p><strong>Total Price:</strong> ₱{{ "%.2f"|format(rental.total_price) }}</p>
+            </div>
+            <div class="detail-group">
+                <p><strong>Location:</strong> {{ rental.item.location }}</p>
+                <p><strong>Owner:</strong> {{ rental.item.owner.username }}</p>
+            </div>
+        </div>
+
+        <div class="rental-actions">
+            {% if rental.status == 'pending' and not rental.payment %}
+            <a href="{{ url_for('payment', rental_id=rental.id) }}" class="btn btn-primary">Proceed to Payment</a>
+            {% endif %}
+
+            {% if rental.status == 'approved' %}
+            <div class="reminder">
+                <i class="fas fa-bell"></i>
+                Pick up your rental on {{ rental.start_date.strftime('%b %d, %Y') }}
+            </div>
+            {% endif %}
+
+            {% if rental.status == 'rented' %}
+            <div class="reminder">
+                <i class="fas fa-clock"></i>
+                Due for return on {{ rental.end_date.strftime('%b %d, %Y') }}
+            </div>
+            {% endif %}
+
+            {% if rental.payment %}
+            <div class="payment-info">
+                <p><strong>Payment Method:</strong> {{ rental.payment.method|title }}</p>
+                <p><strong>Transaction ID:</strong> {{ rental.payment.transaction_id }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="no-rentals">
+        <i class="fas fa-calendar-times"></i>
+        <h3>No rentals yet</h3>
+        <p>Start browsing our rental items to make your first booking!</p>
+        <a href="{{ url_for('items') }}" class="btn btn-primary">Browse Items</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

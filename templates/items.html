@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Rental Items - Cebu Rental Hub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="section-title">Available Rentals</h2>
+    
+    <div class="search-filters">
+        <form method="GET" class="filter-form">
+            <div class="filter-group">
+                <input type="text" name="search" placeholder="Search items..." value="{{ search }}" class="search-input">
+                <select name="category" class="filter-select">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" name="location" placeholder="Location" value="{{ location }}" class="location-input">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
+                <a href="{{ url_for('items') }}" class="btn btn-outline">Clear</a>
+            </div>
+        </form>
+    </div>
+    
+    <div class="items-grid">
+        {% for item in items %}
+        <div class="rental-item">
+            <img src="{{ item.image_url }}" alt="{{ item.title }}" class="item-image">
+            <div class="item-details">
+                <h3 class="item-title">{{ item.title }}</h3>
+                <p class="item-price">₱{{ "%.2f"|format(item.price) }}/day</p>
+                <div class="item-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>{{ item.location }}</span>
+                </div>
+                <p class="item-description">{{ item.description }}</p>
+                <div class="item-meta">
+                    <span class="item-category">{{ item.category }}</span>
+                    <span class="item-owner">By {{ item.owner.username }}</span>
+                </div>
+                <div class="item-actions">
+                    {% if current_user.is_authenticated and current_user.id != item.owner_id %}
+                    <a href="{{ url_for('rent_item', item_id=item.id) }}" class="btn btn-primary">Rent Now</a>
+                    {% elif not current_user.is_authenticated %}
+                    <a href="{{ url_for('login') }}" class="btn btn-primary">Login to Rent</a>
+                    {% else %}
+                    <span class="btn btn-outline">Your Item</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="no-items">
+            <i class="fas fa-search"></i>
+            <h3>No items found</h3>
+            <p>Try adjusting your search criteria or <a href="{{ url_for('add_item') }}">list a new item</a>.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
