@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 import os
 from PIL import Image
+from datetime import datetime, timedelta, date  # Add date to the import
 import io
 
 app = Flask(__name__)
@@ -103,6 +104,42 @@ class RentalItem(db.Model):
         return url_for('static', filename='images/default-item.jpg')
 
 
+def get_available_dates_count(item_id, months=6):
+    """Get count of available dates for the next few months"""
+    start_date = datetime.now().date()
+    end_date = start_date + timedelta(days=30 * months)
+
+    # Get total days in range
+    total_days = (end_date - start_date).days + 1
+
+    # Get blocked dates count
+    blocked_count = BlockedDate.query.filter(
+        BlockedDate.item_id == item_id,
+        BlockedDate.date >= start_date,
+        BlockedDate.date <= end_date
+    ).count()
+
+    return total_days - blocked_count
+
+
+# Make the function available to templates
+@app.context_processor
+def utility_processor():
+    return dict(get_available_dates_count=get_available_dates_count)
+
+# Add this new model for blocked dates
+class BlockedDate(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey('rental_item.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    reason = db.Column(db.String(100))  # e.g., 'rented', 'maintenance', 'owner_blocked'
+    rental_id = db.Column(db.Integer, db.ForeignKey('rental.id'), nullable=True)
+
+    item = db.relationship('RentalItem', backref=db.backref('blocked_dates', lazy=True))
+    rental = db.relationship('Rental', backref=db.backref('blocked_dates', lazy=True))
+
+
+# Update the Rental model to include a method for generating blocked dates
 class Rental(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('rental_item.id'), nullable=False)
@@ -116,6 +153,44 @@ class Rental(db.Model):
     item = db.relationship('RentalItem', backref=db.backref('rentals', lazy=True))
     renter = db.relationship('User', backref=db.backref('rentals', lazy=True))
 
+    def create_blocked_dates(self):
+        """Create blocked dates for this rental period"""
+        current_date = self.start_date.date()
+        end_date = self.end_date.date()
+
+        while current_date <= end_date:
+            blocked_date = BlockedDate(
+                item_id=self.item_id,
+                date=current_date,
+                reason='rented',
+                rental_id=self.id
+            )
+            db.session.add(blocked_date)
+            current_date += timedelta(days=1)
+
+    def remove_blocked_dates(self):
+        """Remove blocked dates associated with this rental"""
+        BlockedDate.query.filter_by(rental_id=self.id).delete()
+
+
+def validate_rental_dates(start_date_str, end_date_str):
+    """Validate rental dates and return (success, start_date, end_date, error_message)"""
+    try:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
+        today = datetime.now().date()
+
+        if start_date < today:
+            return False, None, None, 'Start date cannot be in the past.'
+
+        if start_date >= end_date:
+            return False, None, None, 'End date must be after start date.'
+
+        return True, start_date, end_date, None
+
+    except ValueError:
+        return False, None, None, 'Invalid date format.'
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -264,31 +339,98 @@ def rent_item(item_id):
     item = RentalItem.query.get_or_404(item_id)
 
     if request.method == 'POST':
-        start_date = datetime.strptime(request.form['start_date'], '%Y-%m-%d')
-        end_date = datetime.strptime(request.form['end_date'], '%Y-%m-%d')
+        try:
+            # Parse dates without time components
+            start_date_str = request.form['start_date']
+            end_date_str = request.form['end_date']
 
-        days = (end_date - start_date).days
-        if days < 1:
-            flash('Rental period must be at least 1 day', 'error')
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
+            # Validate date range
+            if start_date >= end_date:
+                flash('End date must be after start date.', 'error')
+                return redirect(url_for('rent_item', item_id=item_id))
+
+            if start_date < datetime.now().date():
+                flash('Start date cannot be in the past.', 'error')
+                return redirect(url_for('rent_item', item_id=item_id))
+
+            # Check if dates are available
+            if not is_date_range_available(item_id, start_date, end_date):
+                flash('Selected dates are not available. Please choose different dates.', 'error')
+                return redirect(url_for('rent_item', item_id=item_id))
+
+            # FIX: Calculate days to match frontend (include both start and end days)
+            days = (end_date - start_date).days + 1  # Include both start and end days
+
+            if days < 1:
+                flash('Rental period must be at least 1 day', 'error')
+                return redirect(url_for('rent_item', item_id=item_id))
+
+            total_price = item.price * days
+
+            # Create rental with datetime objects (set time to beginning of day)
+            new_rental = Rental(
+                item_id=item_id,
+                renter_id=current_user.id,
+                start_date=datetime.combine(start_date, datetime.min.time()),
+                end_date=datetime.combine(end_date, datetime.min.time()),
+                total_price=total_price
+            )
+
+            db.session.add(new_rental)
+            db.session.commit()
+
+            # Create blocked dates for the rental period
+            new_rental.create_blocked_dates()
+            db.session.commit()
+
+            flash('Rental request submitted successfully! Please proceed to payment.', 'success')
+            return redirect(url_for('payment', rental_id=new_rental.id))
+
+        except ValueError as e:
+            flash('Invalid date format. Please select valid dates.', 'error')
             return redirect(url_for('rent_item', item_id=item_id))
 
-        total_price = item.price * days
+    # Get available dates for the calendar
+    available_dates = get_available_dates(item_id)
+    today = datetime.now().date().isoformat()
 
-        new_rental = Rental(
-            item_id=item_id,
-            renter_id=current_user.id,
-            start_date=start_date,
-            end_date=end_date,
-            total_price=total_price
-        )
+    return render_template('rent_item.html', item=item, available_dates=available_dates, today=today)
+def is_date_range_available(item_id, start_date, end_date):
+    """Check if a date range is available for rental"""
+    conflicting_dates = BlockedDate.query.filter(
+        BlockedDate.item_id == item_id,
+        BlockedDate.date >= start_date,
+        BlockedDate.date <= end_date
+    ).first()
 
-        db.session.add(new_rental)
-        db.session.commit()
+    return conflicting_dates is None
 
-        flash('Rental request submitted successfully! Please proceed to payment.', 'success')
-        return redirect(url_for('payment', rental_id=new_rental.id))
 
-    return render_template('rent_item.html', item=item)
+def get_available_dates(item_id, months=6):
+    """Get available dates for the next few months"""
+    start_date = datetime.now().date()
+    end_date = start_date + timedelta(days=30 * months)
+
+    blocked_dates = BlockedDate.query.filter(
+        BlockedDate.item_id == item_id,
+        BlockedDate.date >= start_date,
+        BlockedDate.date <= end_date
+    ).all()
+
+    blocked_dates_set = {bd.date for bd in blocked_dates}
+
+    available_dates = []
+    current_date = start_date
+
+    while current_date <= end_date:
+        if current_date not in blocked_dates_set:
+            available_dates.append(current_date.isoformat())
+        current_date += timedelta(days=1)
+
+    return available_dates
 
 
 @app.route('/my-rentals')
@@ -327,6 +469,9 @@ def payment(rental_id):
 
         rental.status = 'approved'
 
+        # Blocked dates are already created, just update the reason if needed
+        BlockedDate.query.filter_by(rental_id=rental_id).update({'reason': 'rented'})
+
         db.session.add(new_payment)
         db.session.commit()
 
@@ -334,6 +479,32 @@ def payment(rental_id):
         return redirect(url_for('my_rentals'))
 
     return render_template('payment.html', rental=rental)
+
+
+@app.route('/cancel-rental/<int:rental_id>')
+@login_required
+def cancel_rental(rental_id):
+    """Cancel a rental and free up the dates"""
+    rental = Rental.query.get_or_404(rental_id)
+
+    if rental.renter_id != current_user.id:
+        flash('You are not authorized to cancel this rental.', 'error')
+        return redirect(url_for('my_rentals'))
+
+    # Remove blocked dates
+    rental.remove_blocked_dates()
+
+    # Update rental status
+    rental.status = 'cancelled'
+
+    # Also cancel associated payment if exists
+    if rental.payment:
+        rental.payment.status = 'refunded'
+
+    db.session.commit()
+
+    flash('Rental cancelled successfully.', 'success')
+    return redirect(url_for('my_rentals'))
 
 
 @app.route('/update-rental-status/<int:rental_id>/<status>')
@@ -369,6 +540,157 @@ def login():
             flash('Invalid username or password.', 'error')
 
     return render_template('login.html')
+
+
+@app.route('/item/<int:item_id>/availability')
+def item_availability(item_id):
+    """Get available dates for an item"""
+    item = RentalItem.query.get_or_404(item_id)
+
+    # Get blocked dates for the next 6 months
+    start_date = datetime.now().date()
+    end_date = start_date + timedelta(days=180)
+
+    blocked_dates = BlockedDate.query.filter(
+        BlockedDate.item_id == item_id,
+        BlockedDate.date >= start_date,
+        BlockedDate.date <= end_date
+    ).all()
+
+    blocked_dates_list = [bd.date.isoformat() for bd in blocked_dates]
+
+    return jsonify({
+        'item_id': item_id,
+        'item_title': item.title,
+        'blocked_dates': blocked_dates_list
+    })
+
+
+@app.route('/manage-availability/<int:item_id>')
+@login_required
+def manage_availability(item_id):
+    """Page for owners to manage item availability"""
+    item = RentalItem.query.get_or_404(item_id)
+
+    if item.owner_id != current_user.id:
+        flash('You are not authorized to manage this item.', 'error')
+        return redirect(url_for('dashboard'))
+
+    # Get existing blocked dates
+    blocked_dates = BlockedDate.query.filter_by(item_id=item_id).all()
+
+    return render_template('manage_availability.html',
+                           item=item,
+                           blocked_dates=blocked_dates)
+
+
+@app.route('/block-dates/<int:item_id>', methods=['POST'])
+@login_required
+def block_dates(item_id):
+    """Block multiple dates at once"""
+    item = RentalItem.query.get_or_404(item_id)
+
+    if item.owner_id != current_user.id:
+        return jsonify({'success': False, 'message': 'Not authorized'}), 403
+
+    data = request.get_json()
+    dates = data.get('dates', [])
+    reason = data.get('reason', 'owner_blocked')
+
+    blocked_count = 0
+    for date_str in dates:
+        try:
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+
+            # Check if date is already blocked
+            existing_block = BlockedDate.query.filter_by(
+                item_id=item_id,
+                date=date
+            ).first()
+
+            if not existing_block:
+                blocked_date = BlockedDate(
+                    item_id=item_id,
+                    date=date,
+                    reason=reason
+                )
+                db.session.add(blocked_date)
+                blocked_count += 1
+
+        except ValueError:
+            continue
+
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'message': f'Successfully blocked {blocked_count} dates',
+        'blocked_count': blocked_count
+    })
+
+
+@app.route('/unblock-dates/<int:item_id>', methods=['POST'])
+@login_required
+def unblock_dates(item_id):
+    """Unblock multiple dates at once"""
+    item = RentalItem.query.get_or_404(item_id)
+
+    if item.owner_id != current_user.id:
+        return jsonify({'success': False, 'message': 'Not authorized'}), 403
+
+    data = request.get_json()
+    dates = data.get('dates', [])
+
+    unblocked_count = 0
+    for date_str in dates:
+        try:
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+
+            # Find and remove owner-blocked dates only
+            blocked_date = BlockedDate.query.filter_by(
+                item_id=item_id,
+                date=date,
+                rental_id=None
+            ).first()
+
+            if blocked_date:
+                db.session.delete(blocked_date)
+                unblocked_count += 1
+
+        except ValueError:
+            continue
+
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'message': f'Successfully unblocked {unblocked_count} dates',
+        'unblocked_count': unblocked_count
+    })
+
+
+@app.route('/clear-all-blocks/<int:item_id>', methods=['POST'])
+@login_required
+def clear_all_blocks(item_id):
+    """Clear all owner-blocked dates"""
+    item = RentalItem.query.get_or_404(item_id)
+
+    if item.owner_id != current_user.id:
+        return jsonify({'success': False, 'message': 'Not authorized'}), 403
+
+    # Only delete owner-blocked dates (not rental bookings)
+    deleted_count = BlockedDate.query.filter_by(
+        item_id=item_id,
+        rental_id=None
+    ).delete()
+
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'message': f'All owner-blocked dates cleared',
+        'deleted_count': deleted_count
+    })
 
 
 @app.route('/register', methods=['GET', 'POST'])

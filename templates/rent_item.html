@@ -2,6 +2,276 @@
 
 {% block title %}Rent {{ item.title }} - Cebu Rental Hub{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+.rent-item-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.item-preview {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.item-preview img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.item-price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #2c5530;
+    margin: 1rem 0;
+}
+
+.item-location {
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.item-description {
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.item-owner {
+    font-style: italic;
+    color: #888;
+}
+
+.rental-form-container {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 2rem;
+}
+
+.rental-form {
+    margin-top: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #2c5530;
+}
+
+.price-summary {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+}
+
+.summary-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.summary-line.total {
+    border-top: 2px solid #dee2e6;
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #2c5530;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    flex: 1;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #2c5530;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1e3a22;
+}
+
+.btn-outline {
+    background: white;
+    color: #2c5530;
+    border: 2px solid #2c5530;
+}
+
+.btn-outline:hover {
+    background: #f8f9fa;
+}
+
+.availability-calendar {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.calendar-navigation button {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.calendar-day-header {
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: #666;
+    padding: 0.5rem;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.calendar-day.available {
+    background: white;
+    color: #333;
+}
+
+.calendar-day.available:hover {
+    background: #e8f5e8;
+}
+
+.calendar-day.unavailable {
+    background: #f8d7da;
+    color: #721c24;
+    cursor: not-allowed;
+}
+
+.calendar-day.selected {
+    background: #2c5530;
+    color: white;
+}
+
+.calendar-day.today {
+    border: 2px solid #2c5530;
+}
+
+.availability-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.legend-available {
+    background: white;
+    border: 1px solid #ddd;
+}
+
+.legend-unavailable {
+    background: #f8d7da;
+}
+
+.legend-selected {
+    background: #2c5530;
+}
+
+.date-error {
+    color: #dc3545;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    display: none;
+}
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+@media (max-width: 768px) {
+    .rent-item-container {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="rent-item-container">
@@ -12,21 +282,31 @@
             <p class="item-location"><i class="fas fa-map-marker-alt"></i> {{ item.location }}</p>
             <p class="item-description">{{ item.description }}</p>
             <p class="item-owner">Listed by: {{ item.owner.username }}</p>
+
+            <!-- Availability Calendar Preview -->
+            <div class="availability-calendar">
+                <h4>Availability Calendar</h4>
+                <div id="calendarPreview">
+                    <p>Loading availability...</p>
+                </div>
+            </div>
         </div>
-        
+
         <div class="rental-form-container">
             <h3>Request Rental</h3>
-            <form method="POST" class="rental-form">
+            <form method="POST" class="rental-form" id="rentalForm">
                 <div class="form-group">
                     <label for="start_date">Start Date *</label>
-                    <input type="date" id="start_date" name="start_date" required min="{{ today }}">
+                    <input type="text" id="start_date" name="start_date" required readonly>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="end_date">End Date *</label>
-                    <input type="date" id="end_date" name="end_date" required>
+                    <input type="text" id="end_date" name="end_date" required readonly>
                 </div>
-                
+
+                <div class="date-error" id="dateError"></div>
+
                 <div class="price-summary">
                     <div class="summary-line">
                         <span>Daily Rate:</span>
@@ -41,51 +321,259 @@
                         <span id="total-price">₱0.00</span>
                     </div>
                 </div>
-                
+
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Request Rental</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Request Rental</button>
                     <a href="{{ url_for('items') }}" class="btn btn-outline">Cancel</a>
                 </div>
             </form>
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const startDate = document.getElementById('start_date');
     const endDate = document.getElementById('end_date');
     const daysCount = document.getElementById('days-count');
     const totalPrice = document.getElementById('total-price');
+    const dateError = document.getElementById('dateError');
+    const submitBtn = document.getElementById('submitBtn');
+    const rentalForm = document.getElementById('rentalForm');
     const dailyRate = {{ item.price }};
-    
+
+    let blockedDates = [];
+    let flatpickrStart, flatpickrEnd;
+
+    // Fetch available dates
+    function fetchAvailability() {
+        fetch(`/item/{{ item.id }}/availability`)
+            .then(response => response.json())
+            .then(data => {
+                blockedDates = data.blocked_dates;
+                initializeDatePickers();
+                renderCalendarPreview();
+            })
+            .catch(error => {
+                console.error('Error fetching availability:', error);
+                initializeDatePickers();
+            });
+    }
+
+    function initializeDatePickers() {
+        const today = new Date().toISOString().split('T')[0];
+
+        // Initialize start date picker
+        flatpickrStart = flatpickr(startDate, {
+            minDate: today,
+            dateFormat: 'Y-m-d',
+            disable: blockedDates,
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length > 0) {
+                    const minEndDate = new Date(selectedDates[0]);
+                    minEndDate.setDate(minEndDate.getDate() + 1);
+
+                    flatpickrEnd.set('minDate', minEndDate);
+
+                    // If end date is before or equal to start date, clear it
+                    const endDateValue = flatpickrEnd.selectedDates[0];
+                    if (endDateValue && endDateValue <= selectedDates[0]) {
+                        flatpickrEnd.clear();
+                    }
+
+                    calculatePrice();
+                    validateDates();
+                } else {
+                    // Start date cleared, also clear end date
+                    flatpickrEnd.clear();
+                    calculatePrice();
+                    validateDates();
+                }
+            }
+        });
+
+        // Initialize end date picker
+        flatpickrEnd = flatpickr(endDate, {
+            minDate: today,
+            dateFormat: 'Y-m-d',
+            disable: blockedDates,
+            onChange: function(selectedDates, dateStr, instance) {
+                if (selectedDates.length > 0) {
+                    calculatePrice();
+                    validateDates();
+                } else {
+                    calculatePrice();
+                    validateDates();
+                }
+            }
+        });
+    }
+
     function calculatePrice() {
-        if (startDate.value && endDate.value) {
-            const start = new Date(startDate.value);
-            const end = new Date(endDate.value);
-            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-            
-            if (days > 0) {
-                daysCount.textContent = days + ' day' + (days !== 1 ? 's' : '');
-                totalPrice.textContent = '₱' + (days * dailyRate).toFixed(2);
-            } else {
-                daysCount.textContent = '0 days';
-                totalPrice.textContent = '₱0.00';
+        const start = flatpickrStart.selectedDates[0];
+        const end = flatpickrEnd.selectedDates[0];
+
+        if (start && end) {
+            // Calculate days difference correctly
+            const timeDiff = end.getTime() - start.getTime();
+            const days = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+            if (days >= 0) {
+                const rentalDays = days + 1; // Include both start and end days
+                daysCount.textContent = rentalDays + ' day' + (rentalDays !== 1 ? 's' : '');
+                totalPrice.textContent = '₱' + (rentalDays * dailyRate).toFixed(2);
+                return;
             }
         }
+
+        daysCount.textContent = '0 days';
+        totalPrice.textContent = '₱0.00';
     }
-    
-    startDate.addEventListener('change', function() {
-        endDate.min = this.value;
-        calculatePrice();
+
+    function validateDates() {
+        const start = flatpickrStart.selectedDates[0];
+        const end = flatpickrEnd.selectedDates[0];
+
+        // Reset error state
+        hideError();
+
+        if (!start || !end) {
+            return;
+        }
+
+        if (end <= start) {
+            showError('End date must be after start date');
+            return;
+        }
+
+        // Check if any date in the range is blocked
+        const currentDate = new Date(start);
+        while (currentDate <= end) {
+            const dateString = currentDate.toISOString().split('T')[0];
+            if (blockedDates.includes(dateString)) {
+                showError('Selected dates include unavailable dates. Please check the calendar.');
+                return;
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+    }
+
+    function showError(message) {
+        dateError.textContent = message;
+        dateError.style.display = 'block';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.6';
+    }
+
+    function hideError() {
+        dateError.textContent = '';
+        dateError.style.display = 'none';
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+    }
+
+    function renderCalendarPreview() {
+        const calendarEl = document.getElementById('calendarPreview');
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'];
+
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+
+        let calendarHTML = `
+            <div class="calendar-header">
+                <h5>${monthNames[currentMonth]} ${currentYear}</h5>
+            </div>
+            <div class="calendar-grid">
+                <div class="calendar-day-header">Sun</div>
+                <div class="calendar-day-header">Mon</div>
+                <div class="calendar-day-header">Tue</div>
+                <div class="calendar-day-header">Wed</div>
+                <div class="calendar-day-header">Thu</div>
+                <div class="calendar-day-header">Fri</div>
+                <div class="calendar-day-header">Sat</div>
+        `;
+
+        // Empty cells for days before the first day of the month
+        for (let i = 0; i < firstDay; i++) {
+            calendarHTML += '<div class="calendar-day"></div>';
+        }
+
+        // Days of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(currentYear, currentMonth, day);
+            const dateString = date.toISOString().split('T')[0];
+            const isToday = day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
+            const isBlocked = blockedDates.includes(dateString);
+            const isPast = date < today;
+
+            let dayClass = 'calendar-day';
+            if (isToday) dayClass += ' today';
+            if (isBlocked || isPast) {
+                dayClass += ' unavailable';
+            } else {
+                dayClass += ' available';
+            }
+
+            calendarHTML += `<div class="${dayClass}">${day}</div>`;
+        }
+
+        calendarHTML += '</div>';
+
+        // Legend
+        calendarHTML += `
+            <div class="availability-legend">
+                <div class="legend-item">
+                    <div class="legend-color legend-available"></div>
+                    <span>Available</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color legend-unavailable"></div>
+                    <span>Unavailable</span>
+                </div>
+            </div>
+        `;
+
+        calendarEl.innerHTML = calendarHTML;
+    }
+
+    // Form submission validation - SIMPLIFIED
+    rentalForm.addEventListener('submit', function(e) {
+        const start = flatpickrStart.selectedDates[0];
+        const end = flatpickrEnd.selectedDates[0];
+
+        if (!start || !end) {
+            e.preventDefault();
+            showError('Please select both start and end dates');
+            return false;
+        }
+
+        if (end <= start) {
+            e.preventDefault();
+            showError('End date must be after start date');
+            return false;
+        }
+
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Processing...';
+
+        // Allow form submission to proceed to server-side validation
+        return true;
     });
-    
-    endDate.addEventListener('change', calculatePrice);
-    
-    // Set minimum date to today
-    const today = new Date().toISOString().split('T')[0];
-    startDate.min = today;
-    endDate.min = today;
+
+    // Initialize everything
+    fetchAvailability();
+
+    // Debug helper
+    console.log('Rental form initialized for item {{ item.id }}');
 });
 </script>
 {% endblock %}

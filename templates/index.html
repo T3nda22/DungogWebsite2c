@@ -3,16 +3,18 @@
 {% block title %}Home - Cebu Rental Hub{% endblock %}
 
 {% block content %}
-<section class="hero">
-    <h2>Rent Anything in Cebu</h2>
-    <p>Find what you need or list your items for rent. From tools to party equipment, we've got you covered!</p>
-    <div class="cta-buttons">
-        <a href="{{ url_for('items') }}" class="cta-button"><i class="fas fa-search"></i> Browse Rentals</a>
-        {% if current_user.is_authenticated %}
-        <a href="{{ url_for('add_item') }}" class="cta-button secondary"><i class="fas fa-plus"></i> List Your Item</a>
-        {% else %}
-        <a href="{{ url_for('register') }}" class="cta-button secondary"><i class="fas fa-user-plus"></i> Get Started</a>
-        {% endif %}
+<section class="hero" style="background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/static/images/hero-bg.jpg');">
+    <div class="hero-content">
+        <h2>Rent Anything in Cebu</h2>
+        <p>Find what you need or list your items for rent. From tools to party equipment, we've got you covered!</p>
+        <div class="cta-buttons">
+            <a href="{{ url_for('items') }}" class="cta-button"><i class="fas fa-search"></i> Browse Rentals</a>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('add_item') }}" class="cta-button secondary"><i class="fas fa-plus"></i> List Your Item</a>
+            {% else %}
+            <a href="{{ url_for('register') }}" class="cta-button secondary"><i class="fas fa-user-plus"></i> Get Started</a>
+            {% endif %}
+        </div>
     </div>
 </section>
 
@@ -100,4 +102,98 @@
         </div>
     </div>
 </section>
+
+<style>
+.hero {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: white;
+    text-align: center;
+    padding: 100px 20px;
+    margin-bottom: 40px;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+.hero p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 12px 25px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.cta-button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.cta-button.secondary {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 2px solid white;
+}
+
+.cta-button.secondary:hover {
+    background-color: white;
+    color: #007bff;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero {
+        padding: 60px 15px;
+    }
+
+    .hero h2 {
+        font-size: 2rem;
+    }
+
+    .hero p {
+        font-size: 1rem;
+    }
+
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .cta-button {
+        width: 100%;
+        max-width: 250px;
+    }
+}
+</style>
 {% endblock %}
